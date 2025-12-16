@@ -3,11 +3,12 @@ import { CardProduct, CardProductProps } from "@/ui/CardProduct";
 import { Href, Link } from "expo-router";
 import { useRef } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 
 type ProductsProps = {
   titleProduct: string;
   dataProduct: CardProductProps[];
-  linkProducts: Href<string | object>;
+  linkProducts: Href;
 };
 
 export function Products({
@@ -15,6 +16,7 @@ export function Products({
   dataProduct,
   linkProducts,
 }: ProductsProps) {
+  const { colors } = useTheme();
   let products = dataProduct;
 
   if (titleProduct === "Best Sellers") {
@@ -37,7 +39,7 @@ export function Products({
   return (
     <View style={styles.container}>
       <View style={styles.headerProduct}>
-        <Text style={styles.titleProduct}>{titleProduct}</Text>
+        <Text style={[styles.titleProduct, { color: colors.text }]}>{titleProduct}</Text>
         {linkProducts ? (
           <Link href={linkProducts} style={styles.titleProductSeeAll}>
             See All
@@ -57,6 +59,7 @@ export function Products({
                 image,
                 images,
                 title,
+                category,
                 price,
                 sold,
                 rating,
@@ -73,6 +76,7 @@ export function Products({
                 image={image}
                 images={images}
                 title={title}
+                category={category}
                 price={price}
                 sold={sold}
                 rating={rating}

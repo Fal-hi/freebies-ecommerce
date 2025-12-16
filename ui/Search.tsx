@@ -1,28 +1,47 @@
 import { Colors } from "@/constants/Colors";
+import { useTheme } from "@/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, TextInput, View } from "react-native";
 
 type SearchProps = {
   placeholder?: string;
   onChange?: (value: string) => void;
-  value?: any;
+  value?: string;
   style?: object;
 };
 
 export function Search({
   placeholder = "Search Product Name",
   onChange,
+  value,
   style,
 }: SearchProps) {
+  const { colors, theme } = useTheme();
+
   return (
-    <View style={[styles.container, style]}>
-      <TextInput
-        style={styles.input}
-        placeholder={placeholder}
-        onChangeText={onChange}
-        placeholderTextColor={Colors.default.placeholder}
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme === "light" ? Colors.default.gray2 : "#2A2A2A",
+        },
+        style,
+      ]}
+    >
+      <Ionicons
+        name="search-outline"
+        size={20}
+        color={colors.icon}
+        style={styles.icon}
       />
-      <Ionicons name="search-outline" size={25} />
+      <TextInput
+        style={[styles.input, { color: colors.text }]}
+        placeholder={placeholder}
+        placeholderTextColor={Colors.default.placeholder}
+        onChangeText={onChange}
+        value={value}
+        returnKeyType="search"
+      />
     </View>
   );
 }
@@ -30,19 +49,19 @@ export function Search({
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
     backgroundColor: Colors.default.gray2,
     marginBottom: 30,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     borderRadius: 10,
+  },
+  icon: {
+    marginRight: 10,
   },
   input: {
     flex: 1,
-    paddingTop: 10,
-    paddingRight: 10,
-    paddingBottom: 10,
-    paddingLeft: 0,
+    paddingVertical: 12,
+    fontSize: 14,
     fontWeight: "400",
   },
 });

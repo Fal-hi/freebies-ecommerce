@@ -1,7 +1,7 @@
-import { CaretLeft, Cart } from "@/assets/icons";
+import { CaretLeft } from "@/assets/icons";
 import FilterProducts from "@/components/FilterProducts";
 import { Colors } from "@/constants/Colors";
-import { cardProductData, dataCart } from "@/libs/data";
+import { cardProductData } from "@/libs/data";
 import { CardProduct } from "@/ui/CardProduct";
 import { Header } from "@/ui/Header";
 import { Search } from "@/ui/Search";
@@ -9,17 +9,20 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   Dimensions,
-  Pressable,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { CartProduct } from "@/components/Cart";
+import { useTheme } from "@/context/ThemeContext";
+
 const { width, height } = Dimensions.get("window");
 
 export default function SpecialOfferProducts() {
+  const { colors } = useTheme();
   const [search, setSearch] = useState("");
   const [openFilter, setOpenFilter] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState(cardProductData);
@@ -70,24 +73,16 @@ export default function SpecialOfferProducts() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.containerTop}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.containerTop, { backgroundColor: colors.background }]}>
         <Header>
-          <CaretLeft width="16" height="16" onPress={() => router.back()} />
-          <Text style={styles.headerTitle}>Special Offers</Text>
-          <Pressable
-            style={styles.notification}
-            onPress={() => router.push("/cart")}
-          >
-            <View style={styles.dot}>
-              <Text style={styles.dotText}>{dataCart.length}</Text>
-            </View>
-            <Cart width="24" height="24" />
-          </Pressable>
+          <CaretLeft width="16" height="16" onPress={() => router.back()} fill={colors.text} />
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Special Offers</Text>
+          <CartProduct />
         </Header>
         <Search style={styles.search} value={search} onChange={handleSearch} />
       </View>
-      <ScrollView contentContainerStyle={styles.containerContent}>
+      <ScrollView contentContainerStyle={[styles.containerContent, { backgroundColor: colors.background === '#151718' ? '#000' : Colors.default.gray2 }]}>
         <View style={styles.productsContainer}>
           {filteredProducts.length > 0 ? (
             filteredProducts.map((item) => (
@@ -97,6 +92,7 @@ export default function SpecialOfferProducts() {
                 image={item.image}
                 images={item.images}
                 title={item.title}
+                category={item.category}
                 price={item.price}
                 specialOffer={item.specialOffer}
                 sold={item.sold}
@@ -106,7 +102,7 @@ export default function SpecialOfferProducts() {
             ))
           ) : (
             <View style={styles.productNotFound}>
-              <Text style={styles.textNotFound}>Product Not Found</Text>
+              <Text style={[styles.textNotFound, { color: colors.text }]}>Product Not Found</Text>
             </View>
           )}
         </View>
@@ -160,7 +156,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   containerContent: {
-    backgroundColor: Colors.default.gray2,
     flexDirection: "row",
     flexWrap: "wrap",
     paddingHorizontal: 20,
@@ -169,7 +164,7 @@ const styles = StyleSheet.create({
   productsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    gap: 2,
     justifyContent: "space-between",
   },
   productNotFound: {

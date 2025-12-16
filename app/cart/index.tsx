@@ -4,19 +4,19 @@ import { Header } from "@/ui/Header";
 import {
   Image,
   Pressable,
-  SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import { dataCart } from "@/libs/data";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { Modals } from "@/ui/Modal";
 import { Button } from "@/ui/Button";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useCart, CartItem } from "@/context/CartContext";
+import { useTheme } from "@/context/ThemeContext";
 
 type CheckedItemsProps = {
   [key: string | number]: boolean;
@@ -26,19 +26,13 @@ type ProductQuantitiesProps = {
   [key: string | number]: number;
 };
 
-type CartProps = {
-  id: number;
-  image: number;
-  title: string;
-  category: string;
-  price: number;
-};
-
 export default function Cart() {
+  const { colors } = useTheme();
+  const { cartItems, setCartItems } = useCart();
   const [checkedItems, setCheckedItems] = useState<CheckedItemsProps>({});
   const [productQuantities, setProductQuantities] =
     useState<ProductQuantitiesProps>(
-      dataCart.reduce((acc: any, item: CartProps) => {
+      cartItems.reduce((acc: any, item: CartItem) => {
         acc[item.id] = 1; // Set default quantity to 1
         return acc;
       }, {})
@@ -46,27 +40,62 @@ export default function Cart() {
   const [openEdit, setOpenEdit] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
 
+  useEffect(() => {
+    setProductQuantities((prev) => {
+      const newQuantities = { ...prev };
+      cartItems.forEach((item) => {
+        if (!newQuantities[item.id]) {
+          newQuantities[item.id] = 1;
+        }
+      });
+      return newQuantities;
+    });
+  }, [cartItems]);
+
   function TotalProduct({ itemId }: { itemId: number }) {
     return (
       <View style={styles.boxTotalProduct}>
         <Pressable onPress={() => handleDecrement(itemId)}>
-          <Text style={styles.box}>-</Text>
+          <Text
+            style={[
+              styles.box,
+              { color: colors.text, borderColor: colors.text },
+            ]}
+          >
+            -
+          </Text>
         </Pressable>
-        <Text style={styles.box}>{productQuantities[itemId]}</Text>
+        <Text
+          style={[styles.box, { color: colors.text, borderColor: colors.text }]}
+        >
+          {productQuantities[itemId]}
+        </Text>
         <Pressable onPress={() => handleIncrement(itemId)}>
-          <Text style={styles.box}>+</Text>
+          <Text
+            style={[
+              styles.box,
+              { color: colors.text, borderColor: colors.text },
+            ]}
+          >
+            +
+          </Text>
         </Pressable>
       </View>
     );
   }
 
-  const handleEdit = () => {
-    setOpenEdit(!openEdit);
-  };
+  const onDeleteConfirm = () => {
+    const newCartItems = cartItems.filter((item) => !checkedItems[item.id]);
+    setCartItems(newCartItems);
 
-  const handleDelete = () => {
-    // setOpenEdit(!openEdit);
-    setOpenModalDelete(!openModalDelete);
+    const newCheckedItems = { ...checkedItems };
+    Object.keys(checkedItems).forEach((key) => {
+      if (checkedItems[key]) {
+        delete newCheckedItems[key];
+      }
+    });
+    setCheckedItems(newCheckedItems);
+    setOpenModalDelete(false);
   };
 
   const handleCheckboxChange = (itemId: number, isChecked: boolean) => {
@@ -79,7 +108,7 @@ export default function Cart() {
   const handleAllProductsChange = (isChecked: boolean) => {
     const newCheckedItems: any = {};
     if (isChecked) {
-      dataCart.forEach((item) => {
+      cartItems.forEach((item) => {
         newCheckedItems[item.id] = true;
       });
     }
@@ -103,37 +132,59 @@ export default function Cart() {
     });
   };
 
-  const totalPriceCheckout = dataCart.reduce((total, item) => {
+  const totalPriceCheckout = cartItems.reduce((total, item) => {
     const quantity = productQuantities[item.id] || 1;
     return checkedItems[item.id] ? total + item.price * quantity : total;
   }, 0);
 
   const isAllChecked =
-    dataCart.length > 0 && dataCart.every((item) => checkedItems[item.id]);
+    cartItems.length > 0 && cartItems.every((item) => checkedItems[item.id]);
 
   const totalProduct = Object.keys(checkedItems).filter(
     (key) => checkedItems[key]
   ).length;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <Header>
-        <CaretLeft width="16" height="16" onPress={() => router.back()} />
-        <Text style={styles.headerTitle}>My Cart</Text>
+        <CaretLeft
+          width="16"
+          height="16"
+          onPress={() => router.back()}
+          fill={colors.text}
+        />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          My Cart
+        </Text>
         {openEdit ? (
-          <Check width="24" height="24" onPress={handleEdit} />
+          <Check
+            width="24"
+            height="24"
+            onPress={() => setOpenEdit(true)}
+            fill={colors.text}
+          />
         ) : (
-          <Edit width="24" height="24" onPress={handleEdit} />
+          <Edit
+            width="24"
+            height="24"
+            onPress={() => setOpenEdit(true)}
+            fill={colors.text}
+          />
         )}
       </Header>
       <ScrollView style={styles.containerContent}>
-        {dataCart.map((item) => (
-          <View key={item.id} style={styles.row}>
+        {cartItems.map((item) => (
+          <View
+            key={item.id}
+            style={[styles.row, { backgroundColor: colors.background }]}
+          >
             <View style={styles.boxLeft}>
               <BouncyCheckbox
                 size={25}
                 fillColor={Colors.default.blue}
-                unFillColor={Colors.default.white}
+                unFillColor={colors.background}
                 innerIconStyle={{
                   borderWidth: 1,
                   borderColor: Colors.default.line,
@@ -147,7 +198,10 @@ export default function Cart() {
             </View>
             <View style={styles.content}>
               <View>
-                <Text numberOfLines={1} style={styles.title}>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.title, { color: colors.text }]}
+                >
                   {item.title}
                 </Text>
                 <Text style={styles.category}>{item.category}</Text>
@@ -166,7 +220,7 @@ export default function Cart() {
             <BouncyCheckbox
               size={25}
               fillColor={Colors.default.blue}
-              unFillColor={Colors.default.white}
+              unFillColor={colors.background}
               innerIconStyle={{
                 borderWidth: 1,
                 borderColor: Colors.default.line,
@@ -175,12 +229,17 @@ export default function Cart() {
               isChecked={isAllChecked}
               onPress={handleAllProductsChange}
             />
-            <Text style={styles.checkoutText}>All Products</Text>
+            <Text style={[styles.checkoutText, { color: colors.text }]}>
+              All Products
+            </Text>
           </View>
         </View>
         {openEdit ? (
           <>
-            <Pressable style={styles.checkoutButton} onPress={handleDelete}>
+            <Pressable
+              style={styles.checkoutButton}
+              onPress={() => setOpenModalDelete(true)}
+            >
               <Text style={styles.checkoutButtonText}>
                 Delete (
                 {
@@ -193,8 +252,9 @@ export default function Cart() {
                 open={openModalDelete}
                 setOpen={() => setOpenModalDelete(!openModalDelete)}
                 title="Remove"
+                position="bottom"
               >
-                <Text style={styles.modalText}>
+                <Text style={[styles.modalText, { color: colors.text }]}>
                   Are you sure want to remove {totalProduct}{" "}
                   {totalProduct < 2 ? "product" : "products"}?
                 </Text>
@@ -206,7 +266,7 @@ export default function Cart() {
                   />
                   <Button
                     title="Yes"
-                    onPress={() => setOpenModalDelete(!openModalDelete)}
+                    onPress={onDeleteConfirm}
                     style={styles.buttonApply}
                     styleTitle={styles.buttonApplyTitle}
                   />
@@ -217,7 +277,9 @@ export default function Cart() {
         ) : (
           <View style={styles.checkoutRight}>
             <View>
-              <Text style={styles.checkoutTotalPrice}>Total</Text>
+              <Text style={[styles.checkoutTotalPrice, { color: colors.text }]}>
+                Total
+              </Text>
               <Text style={styles.totalPrice}>
                 ${totalPriceCheckout.toFixed(2)}
               </Text>
@@ -242,21 +304,18 @@ export default function Cart() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight,
-    backgroundColor: Colors.default.white,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "500",
   },
   containerContent: {
-    backgroundColor: Colors.default.gray2,
+    marginTop: 20,
   },
   row: {
-    backgroundColor: Colors.default.white,
     flexDirection: "row",
     columnGap: 15,
-    marginTop: 20,
+    // marginTop: 20,
     borderRadius: 10,
     paddingVertical: 15,
     paddingHorizontal: 10,
@@ -298,6 +357,7 @@ const styles = StyleSheet.create({
   boxTotalProduct: {
     flexDirection: "row",
     justifyContent: "center",
+    gap: 3,
   },
   box: {
     borderWidth: 1,

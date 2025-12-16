@@ -1,131 +1,99 @@
-import { CaretLeft, Cart } from "@/assets/icons";
-import { NumberInput } from "@/components/NumberInput";
+import { CaretLeft } from "@/assets/icons";
 import { Colors } from "@/constants/Colors";
-import { cardProductData, dataCart } from "@/libs/data";
-import { Button } from "@/ui/Button";
+import { cardProductData } from "@/libs/data";
 import { CardProduct } from "@/ui/CardProduct";
-import { Divider } from "@/ui/Divider";
 import { Header } from "@/ui/Header";
-import { Modals } from "@/ui/Modal";
 import { Search } from "@/ui/Search";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useLocalSearchParams } from "expo-router";
+
+import { router } from "expo-router";
 import { useState } from "react";
-import {
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { CartProduct } from "@/components/Cart";
+import { useTheme } from "@/context/ThemeContext";
+import FilterProducts from "@/components/FilterProducts";
+import { Dimensions } from "react-native";
+
+const { width, height } = Dimensions.get("window");
 
 export default function BestSellerProducts() {
+  const { colors } = useTheme();
   const [openFilter, setOpenFilter] = useState(false);
-  const params = useLocalSearchParams();
-  const { id, title } = params;
+  const [filteredProducts, setFilteredProducts] = useState(cardProductData);
+  const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
 
-  function CheckboxContent({ title }: { title: string }) {
-    return (
-      <View style={styles.checkboxContent}>
-        <Text style={styles.checkboxTitle}>{title}</Text>
-        <View style={styles.checkbox}>
-          <BouncyCheckbox
-            size={25}
-            fillColor={Colors.default.oldGreen}
-            unFillColor={Colors.default.white}
-            innerIconStyle={{
-              borderWidth: 1,
-              borderColor: Colors.default.line,
-            }}
-            //   onPress={(isChecked: boolean) => {
-            //     console.log(isChecked);
-            //   }}
-          />
-        </View>
-      </View>
-    );
-  }
+  const applyFilters = (filters: {
+    categories: string[];
+    maxPrice?: number;
+  }) => {
+    setMaxPrice(filters.maxPrice);
+    const filtered = cardProductData
+      .filter(
+        (product: any) =>
+          (filters.categories.length === 0 ||
+            filters.categories.includes(product.category)) &&
+          (!filters.maxPrice || product.specialOffer <= filters.maxPrice) &&
+          product.specialOffer
+      )
+      .sort((a, b) => b.sold - a.sold);
+
+    setFilteredProducts(filtered);
+    setOpenFilter(false);
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <Header>
-        <CaretLeft width="16" height="16" onPress={() => router.back()} />
-        <Text style={styles.headerTitle}>Best Seller</Text>
-        <Pressable
-          style={styles.notification}
-          onPress={() => router.push("/cart")}
-        >
-          <View style={styles.dot}>
-            <Text style={styles.dotText}>{dataCart.length}</Text>
-          </View>
-          <Cart width="24" height="24" />
-        </Pressable>
+        <CaretLeft
+          width="16"
+          height="16"
+          onPress={() => router.back()}
+          fill={colors.text}
+        />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Best Seller
+        </Text>
+        <CartProduct />
       </Header>
       <Search style={styles.containerHeader} />
       <ScrollView contentContainerStyle={styles.containerContent}>
         <View style={styles.productsContainer}>
-          {cardProductData
-            .sort((a, b) => b.sold - a.sold)
-            .map((item) => (
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((item) => (
               <CardProduct
                 key={item.id}
                 id={item.id}
                 image={item.image}
                 images={item.images}
                 title={item.title}
+                category={item.category}
                 price={item.price}
                 specialOffer={item.specialOffer}
                 sold={item.sold}
                 rating={item.rating}
                 reviewer={item.reviewer}
-                totalProduct={item.totalProduct}
               />
-            ))}
+            ))
+          ) : (
+            <View style={styles.productNotFound}>
+              <Text style={[styles.textNotFound, { color: colors.text }]}>
+                Product Not Found
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
-      <Ionicons
-        name="filter-circle"
-        size={50}
-        style={styles.filterButton}
-        onPress={() => setOpenFilter(true)}
-      />
-      <Modals
+
+      <FilterProducts
         open={openFilter}
-        setOpen={() => setOpenFilter(!openFilter)}
-        title="Filter"
-      >
-        <View style={styles.modalContent}>
-          <NumberInput
-            label="Maximum Price Range"
-            placeholder="Set maximum price range"
-            min={1}
-            max={100}
-          />
-          <CheckboxContent title="T-shirt" />
-          <Divider style={styles.divider} />
-          <CheckboxContent title="Pants" />
-          <Divider style={styles.divider} />
-          <CheckboxContent title="Shoes" />
-          <Divider style={styles.divider} />
-          <CheckboxContent title="Hoodie" />
-        </View>
-        <View style={styles.modalButtons}>
-          <Button
-            title="Reset"
-            onPress={() => setOpenFilter(false)}
-            style={styles.buttonReset}
-          />
-          <Button
-            title="Apply"
-            onPress={() => setOpenFilter(false)}
-            style={styles.buttonApply}
-            styleTitle={styles.buttonApplyTitle}
-          />
-        </View>
-      </Modals>
+        setOpen={setOpenFilter}
+        onApply={applyFilters}
+        initialMaxPrice={maxPrice}
+        title="Filter Products"
+      />
     </SafeAreaView>
   );
 }
@@ -133,12 +101,10 @@ export default function BestSellerProducts() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight,
-    backgroundColor: Colors.default.white,
   },
   containerHeader: {
     marginHorizontal: 20,
-    marginVertical: 20,
+    marginTop: 20,
   },
   notification: {
     position: "relative",
@@ -167,14 +133,13 @@ const styles = StyleSheet.create({
   containerContent: {
     flexDirection: "row",
     flexWrap: "wrap",
-    backgroundColor: Colors.default.gray2,
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
   productsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    gap: 2,
     justifyContent: "space-between",
   },
   filterButton: {
@@ -223,5 +188,17 @@ const styles = StyleSheet.create({
   },
   buttonApplyTitle: {
     color: Colors.default.white,
+  },
+  productNotFound: {
+    height: height * 0.7,
+    width: width * 0.9,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textNotFound: {
+    fontSize: 16,
+    fontWeight: "500",
+    textAlign: "center",
+    marginTop: 20,
   },
 });

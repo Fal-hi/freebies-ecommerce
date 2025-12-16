@@ -1,109 +1,97 @@
-import {
-  LogBox,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { Header } from "@/ui/Header";
+import { useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Search } from "@/ui/Search";
 import { Cards } from "@/components/home/Cards";
 import { Categories } from "@/components/home/Categories";
 import { Products } from "@/components/home/Products";
 import { CardHighlight } from "@/components/home/CardHighlight";
-import { cardProductData, dataCart } from "@/libs/data";
-import { Bell, Cart } from "@/assets/icons";
-import { router } from "expo-router";
-
-// Menonaktifkan warning tertentu
-LogBox.ignoreLogs([
-  "react-native-snap-carousel: It is recommended to use at least version 0.44 of React Native with the plugin",
-]);
+import { SearchResults } from "@/components/home/SearchResults";
+import { cardProductData } from "@/libs/data";
+import { useTheme } from "@/context/ThemeContext";
+import { MainLayout } from "@/components/MainLayout";
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
+  const [searchQuery, setSearchQuery] = useState("");
+
   const topSoldProduct = cardProductData.sort((a, b) => b.sold - a.sold)[0];
   const topSpecialOfferProduct = cardProductData.sort(
     (a, b) => a.price - b.price
   )[0];
+
+  // Filter products based on search query
+  const filteredProducts = cardProductData.filter((product) =>
+    product.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const isSearching = searchQuery.trim().length > 0;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Header>
-        <Text style={styles.headerTitle}>Mega Mall</Text>
-        <View style={styles.notifications}>
-          <Pressable
-            style={styles.notification}
-            onPress={() => router.push("/")}
-          >
-            <View style={styles.dot}>
-              <Text style={styles.dotText}>8</Text>
-            </View>
-            <Bell width="24" height="24" />
-          </Pressable>
-          <Pressable
-            style={styles.notification}
-            onPress={() => router.push("/cart")}
-          >
-            <View style={styles.dot}>
-              <Text style={styles.dotText}>{dataCart.length}</Text>
-            </View>
-            <Cart width="24" height="24" />
-          </Pressable>
-        </View>
-      </Header>
+    <MainLayout>
       <ScrollView>
-        <View style={styles.containerTop}>
-          <Search />
-          <Cards />
-          <Categories />
+        <View
+          style={[styles.containerTop, { backgroundColor: colors.background }]}
+        >
+          <Search
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search Product Name"
+          />
+          {!isSearching && (
+            <>
+              <Cards />
+              <Categories />
+            </>
+          )}
         </View>
-        <View style={styles.containerProduct}>
-          <CardHighlight
-            title={topSoldProduct.title}
-            image={topSoldProduct.image}
-            bgColor={Colors.default.green}
-            link="/best-seller"
+        {isSearching ? (
+          <SearchResults
+            products={filteredProducts}
+            searchQuery={searchQuery}
           />
-          <Products
-            titleProduct="Best Sellers"
-            dataProduct={cardProductData}
-            linkProducts="/best-seller"
-          />
-          <CardHighlight
-            title={topSpecialOfferProduct.title}
-            image={topSpecialOfferProduct.image}
-            bgColor={Colors.default.blue}
-            link="/special-offer"
-          />
-          <Products
-            titleProduct="Special Offers"
-            dataProduct={cardProductData}
-            linkProducts="/special-offer"
-          />
-        </View>
+        ) : (
+          <View style={styles.containerProduct}>
+            <CardHighlight
+              title={topSoldProduct.title}
+              image={topSoldProduct.image}
+              bgColor={Colors.default.green}
+              link="/best-seller"
+            />
+            <Products
+              titleProduct="Best Sellers"
+              dataProduct={cardProductData}
+              linkProducts="/best-seller"
+            />
+            <CardHighlight
+              title={topSpecialOfferProduct.title}
+              image={topSpecialOfferProduct.image}
+              bgColor={Colors.default.blue}
+              link="/special-offer"
+            />
+            <Products
+              titleProduct="Special Offers"
+              dataProduct={cardProductData}
+              linkProducts="/special-offer"
+            />
+          </View>
+        )}
       </ScrollView>
-    </SafeAreaView>
+    </MainLayout>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight,
-    backgroundColor: Colors.default.white,
   },
   containerTop: {
-    backgroundColor: Colors.default.white,
     paddingHorizontal: 20,
     paddingTop: 10,
   },
   containerProduct: {
     flexDirection: "column",
     rowGap: 20,
-    backgroundColor: "#FAFAFA",
     paddingHorizontal: 20,
     paddingVertical: 20,
   },

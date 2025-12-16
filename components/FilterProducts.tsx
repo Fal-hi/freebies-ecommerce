@@ -1,13 +1,11 @@
 import { Colors } from "@/constants/Colors";
-import { cardProductData } from "@/libs/data";
 import { Modals } from "@/ui/Modal";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { StatusBar, StyleSheet, Text, View } from "react-native";
-import BouncyCheckbox from "react-native-bouncy-checkbox";
+import { StyleSheet, View } from "react-native";
 import { NumberInput } from "./NumberInput";
-import { Divider } from "@/ui/Divider";
 import { Button } from "@/ui/Button";
+import { CheckboxItem } from "@/ui/CheckboxItem";
 
 type FilterModalProps = {
   open: boolean;
@@ -27,37 +25,13 @@ export default function FilterProducts({
   const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState<number | undefined>(initialMaxPrice);
 
-  function CheckboxContent({ title }: { title: string }) {
-    const isChecked = checkedCategories.includes(title);
-
-    const handleCheckboxChange = (checked: boolean) => {
-      if (checked) {
-        setCheckedCategories([...checkedCategories, title]);
-      } else {
-        setCheckedCategories(
-          checkedCategories.filter((category) => category !== title)
-        );
-      }
-    };
-    return (
-      <View style={styles.checkboxContent}>
-        <Text style={styles.checkboxTitle}>{title}</Text>
-        <View style={styles.checkbox}>
-          <BouncyCheckbox
-            size={25}
-            fillColor={Colors.default.oldGreen}
-            unFillColor={Colors.default.white}
-            innerIconStyle={{
-              borderWidth: 1,
-              borderColor: Colors.default.line,
-            }}
-            isChecked={isChecked}
-            onPress={handleCheckboxChange}
-          />
-        </View>
-      </View>
-    );
-  }
+  const handleCheckboxChange = (category: string, checked: boolean) => {
+    if (checked) {
+      setCheckedCategories([...checkedCategories, category]);
+    } else {
+      setCheckedCategories(checkedCategories.filter((cat) => cat !== category));
+    }
+  };
 
   const handleApply = () => {
     onApply({ categories: checkedCategories, maxPrice: maxPrice });
@@ -72,7 +46,12 @@ export default function FilterProducts({
         style={styles.filterButton}
         onPress={() => setOpen(!open)}
       />
-      <Modals open={open} setOpen={() => setOpen(!open)} title={title}>
+      <Modals
+        open={open}
+        setOpen={() => setOpen(!open)}
+        title={title}
+        position="bottom"
+      >
         <View style={styles.modalContent}>
           <NumberInput
             label="Maximum Price Range"
@@ -82,13 +61,26 @@ export default function FilterProducts({
             value={maxPrice ? String(maxPrice) : ""}
             onChangeText={(value) => setMaxPrice(Number(value))}
           />
-          <CheckboxContent title="T-shirts" />
-          <Divider style={styles.divider} />
-          <CheckboxContent title="Pants" />
-          <Divider style={styles.divider} />
-          <CheckboxContent title="Shoes" />
-          <Divider style={styles.divider} />
-          <CheckboxContent title="Hoodies" />
+          <CheckboxItem
+            label="T-shirts"
+            isChecked={checkedCategories.includes("T-shirts")}
+            onPress={(checked) => handleCheckboxChange("T-shirts", checked)}
+          />
+          <CheckboxItem
+            label="Pants"
+            isChecked={checkedCategories.includes("Pants")}
+            onPress={(checked) => handleCheckboxChange("Pants", checked)}
+          />
+          <CheckboxItem
+            label="Shoes"
+            isChecked={checkedCategories.includes("Shoes")}
+            onPress={(checked) => handleCheckboxChange("Shoes", checked)}
+          />
+          <CheckboxItem
+            label="Hoodies"
+            isChecked={checkedCategories.includes("Hoodies")}
+            onPress={(checked) => handleCheckboxChange("Hoodies", checked)}
+          />
         </View>
         <View style={styles.modalButtons}>
           <Button
@@ -112,30 +104,13 @@ const styles = StyleSheet.create({
   filterButton: {
     color: Colors.default.blue,
     position: "absolute",
-    bottom: 20,
+    bottom: 40,
     right: 20,
   },
   modalContent: {
     marginTop: 15,
     flexDirection: "column",
     rowGap: 6,
-  },
-  checkboxContent: {
-    width: "100%",
-    height: 30,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  checkboxTitle: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  checkbox: {
-    marginRight: -17,
-  },
-  divider: {
-    marginVertical: 10,
   },
   modalButtons: {
     flexDirection: "row",

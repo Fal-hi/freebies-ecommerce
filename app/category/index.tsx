@@ -1,4 +1,5 @@
-import { CaretLeft, Cart } from "@/assets/icons";
+import { CaretLeft } from "@/assets/icons";
+import { CartProduct } from "@/components/Cart";
 import { NumberInput } from "@/components/NumberInput";
 import { Colors } from "@/constants/Colors";
 import { cardProductData } from "@/libs/data";
@@ -12,7 +13,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -20,8 +20,11 @@ import {
   View,
 } from "react-native";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function CategoryDetails() {
+  const { colors } = useTheme();
   const [openFilter, setOpenFilter] = useState(false);
   const params = useLocalSearchParams();
   const { id, title } = params;
@@ -32,19 +35,16 @@ export default function CategoryDetails() {
   function CheckboxContent({ title }: { title: string }) {
     return (
       <View style={styles.checkboxContent}>
-        <Text style={styles.checkboxTitle}>{title}</Text>
+        <Text style={[styles.checkboxTitle, { color: colors.text }]}>{title}</Text>
         <View style={styles.checkbox}>
           <BouncyCheckbox
             size={25}
             fillColor={Colors.default.oldGreen}
-            unFillColor={Colors.default.white}
+            unFillColor={colors.background}
             innerIconStyle={{
               borderWidth: 1,
               borderColor: Colors.default.line,
             }}
-            //   onPress={(isChecked: boolean) => {
-            //     console.log(isChecked);
-            //   }}
           />
         </View>
       </View>
@@ -52,11 +52,11 @@ export default function CategoryDetails() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Header>
-        <CaretLeft width="16" height="16" onPress={() => router.back()} />
-        <Text style={styles.headerTitle}>{title}</Text>
-        <Cart width="20" height="20" />
+        <CaretLeft width="16" height="16" onPress={() => router.back()} fill={colors.text} />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{title}</Text>
+        <CartProduct />
       </Header>
       <Search style={styles.containerHeader} />
       <ScrollView contentContainerStyle={styles.containerContent}>
@@ -68,6 +68,7 @@ export default function CategoryDetails() {
               image={item.image}
               images={item.images}
               title={item.title}
+              category={item.category}
               price={item.price}
               specialOffer={item.specialOffer}
               sold={item.sold}
@@ -138,14 +139,14 @@ const styles = StyleSheet.create({
   containerContent: {
     flexDirection: "row",
     flexWrap: "wrap",
-    backgroundColor: Colors.default.gray2,
+    justifyContent: "center",
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 10,
   },
   productsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 10,
+    gap: 2,
     justifyContent: "space-between",
   },
   filterButton: {

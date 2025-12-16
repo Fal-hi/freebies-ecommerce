@@ -7,7 +7,7 @@ type NumberInputProps = {
   placeholder?: string;
   min?: number;
   max?: number;
-  onChangeText: (value: any) => void;
+  onChangeText?: (value: any) => void;
   value?: any;
   style?: object;
 };
@@ -32,7 +32,7 @@ export function NumberInput({
       setInputValue("");
     }
 
-    onChangeText(numericValue);
+    onChangeText?.(numericValue);
   };
 
   return (

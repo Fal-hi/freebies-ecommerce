@@ -4,7 +4,6 @@ import { Header } from "@/ui/Header";
 import { UserComment } from "@/ui/UserComment";
 import { router, useLocalSearchParams } from "expo-router";
 import {
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -14,6 +13,8 @@ import {
 import StarRating from "react-native-star-rating-widget";
 import * as Progress from "react-native-progress";
 import { dataReviewers } from "@/libs/data";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/context/ThemeContext";
 
 type RatingStarProps = {
   rating: number;
@@ -22,49 +23,49 @@ type RatingStarProps = {
 };
 
 export default function DetailReview() {
+  const { colors } = useTheme();
   const params = useLocalSearchParams();
   const { id, photo, name, rating, date, comment }: any = params;
 
   function RatingStar({ rating, progress, total }: RatingStarProps) {
     return (
-      <View style={styles.ratingRightContent}>
+      <View style={[styles.ratingRightContent, { borderLeftColor: colors.tabIconDefault }]}>
         <StarRating
           rating={rating}
           onChange={() => {}}
           color={Colors.default.yellow}
           emptyColor={Colors.default.line}
           starSize={25}
-          starStyle={{ marginRight: -4 }}
         />
         <Progress.Bar
           width={100}
           height={6}
           color={Colors.default.yellow}
-          borderColor={Colors.default.white}
+          borderColor={colors.background}
           unfilledColor={Colors.default.divider}
           progress={progress}
         />
-        <Text>{total}</Text>
+        <Text style={{ color: colors.text }}>{total}</Text>
       </View>
     );
   }
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Header>
-        <CaretLeft width="16" height="16" onPress={() => router.back()} />
-        <Text style={styles.headerTitle}>Review Product</Text>
+        <CaretLeft width="16" height="16" onPress={() => router.back()} fill={colors.text} />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Review Product</Text>
         <View style={styles.cardRating}>
           <Star width="20" height="20" />
-          <Text style={styles.ratingReview}>{rating}</Text>
+          <Text style={[styles.ratingReview, { color: colors.text }]}>{rating || 0}</Text>
         </View>
       </Header>
       <ScrollView contentContainerStyle={styles.containerContent}>
         <View style={styles.containerRating}>
           <View style={styles.ratingLeft}>
-            <Text style={styles.ratingTotal}>
-              <Text style={styles.ratingTotalHighlight}>{rating}</Text> / 5
+            <Text style={[styles.ratingTotal, { color: colors.text }]}>
+              <Text style={[styles.ratingTotalHighlight, { color: colors.text }]}>{rating || 0}</Text> / 5
             </Text>
-            <Text style={styles.ratingTotalReview}>86 Reviews</Text>
+            <Text style={[styles.ratingTotalReview, { color: colors.text }]}>86 Reviews</Text>
           </View>
           <View style={styles.ratingRight}>
             <RatingStar rating={5} progress={0.8} total={70} />

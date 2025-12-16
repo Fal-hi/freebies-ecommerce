@@ -397,6 +397,66 @@ export function Hoodie({
   );
 }
 
+export function Underwear({
+  width = "32",
+  height = "32",
+  fill = "#0C1A30",
+}: IconsProps) {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M16 2C17.1 2 18 2.9 18 4V7C18 8.66 16.66 10 15 10H13V11.07C14.07 11.28 15.09 11.64 16 12.14V10C16 9.45 16.45 9 17 9C17.55 9 18 9.45 18 10V13.5C19.25 14.81 20 16.54 20 18.5V22H4V18.5C4 16.54 4.75 14.81 6 13.5V10C6 9.45 6.45 9 7 9C7.55 9 8 9.45 8 10V12.14C8.91 11.64 9.93 11.28 11 11.07V10H9C7.34 10 6 8.66 6 7V4C6 2.9 6.9 2 8 2H16M8 4V7C8 7.55 8.45 8 9 8H11V4H8M13 4V8H15C15.55 8 16 7.55 16 7V4H13M6 18.5C6 16.57 7.57 15 9.5 15C10.5 15 11.36 15.5 12 16.26C12.64 15.5 13.5 15 14.5 15C16.43 15 18 16.57 18 18.5V20H6V18.5Z"
+        fill={fill}
+      />
+    </Svg>
+  );
+}
+
+export function Socks({
+  width = "32",
+  height = "32",
+  fill = "#0C1A30",
+}: IconsProps) {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M3 3V11C3 14.09 4.91 16.81 7.67 18.16L7.04 21.2C6.89 21.95 7.46 22.67 8.23 22.67H11.77C12.54 22.67 13.11 21.95 12.96 21.2L12.33 18.16C15.09 16.81 17 14.09 17 11V3H3M15 5V6H5V5H15M5 8H15V11C15 14.31 12.31 17 9 17H11C7.69 17 5 14.31 5 11V8M19 3V11C19 11.55 19.45 12 20 12C20.55 12 21 11.55 21 11V3H19Z"
+        fill={fill}
+      />
+    </Svg>
+  );
+}
+
+export function Hat({
+  width = "32",
+  height = "32",
+  fill = "#0C1A30",
+}: IconsProps) {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 2C9.24 2 7 4.24 7 7H5C4.45 7 4 7.45 4 8V10C4 10.55 4.45 11 5 11H6.09C6.57 14.92 9.95 18 14 18H17C18.1 18 19 17.1 19 16V14C19 12.9 18.1 12 17 12H16.91C16.5 10.29 15.29 8.86 13.71 8.22C14.5 7.67 15 6.89 15 6C15 4.34 13.66 3 12 3C10.34 3 9 4.34 9 6C9 6.89 9.5 7.67 10.29 8.22C9.5 8.5 8.81 8.97 8.23 9.54C8.08 8.74 8 7.89 8 7C8 4.79 9.79 3 12 3V2M5 9H6V10H5V9M12 5C12.55 5 13 5.45 13 6C13 6.55 12.55 7 12 7C11.45 7 11 6.55 11 6C11 5.45 11.45 5 12 5M17 14V16H14C11.54 16 9.45 14.31 8.77 12H9.68C10.26 13.19 11.53 14 13 14H17M2 19V21H22V19H2Z"
+        fill={fill}
+      />
+    </Svg>
+  );
+}
+
+export function Accessories({
+  width = "32",
+  height = "32",
+  fill = "#0C1A30",
+}: IconsProps) {
+  return (
+    <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M6 2V8H8V22H16V8H18V2H6M8 4H16V6H8V4M10 8H14V10H10V8M10 12H14V20H10V12Z"
+        fill={fill}
+      />
+    </Svg>
+  );
+}
+
 export function Star({
   width = "11",
   height = "10",
@@ -436,4 +496,8 @@ export default {
   Search,
   Shoe,
   Tshirt,
+  Underwear,
+  Socks,
+  Hat,
+  Accessories,
 };

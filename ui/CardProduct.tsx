@@ -2,12 +2,14 @@ import { Discount, DotsThreeVertical, Star } from "@/assets/icons";
 import { Colors } from "@/constants/Colors";
 import { Link } from "expo-router";
 import { Image, StyleSheet, Text, View } from "react-native";
+import { useTheme } from "@/context/ThemeContext";
 
 export type CardProductProps = {
   id: number;
   image: any;
   images: any[];
   title: string;
+  category: string;
   price: number;
   sold: number;
   rating: number;
@@ -23,6 +25,7 @@ export function CardProduct({
   image,
   images,
   title,
+  category,
   price,
   sold,
   rating,
@@ -32,6 +35,7 @@ export function CardProduct({
   desc,
   onPress,
 }: CardProductProps) {
+  const { colors } = useTheme();
   return (
     <Link
       href={{
@@ -41,6 +45,7 @@ export function CardProduct({
           image,
           images: JSON.stringify(images),
           title,
+          category,
           price,
           sold,
           rating,
@@ -53,7 +58,7 @@ export function CardProduct({
       style={styles.card}
       onPress={onPress}
     >
-      <View style={styles.cardProduct}>
+      <View style={[styles.cardProduct, { backgroundColor: colors.background === '#151718' ? '#222' : Colors.default.white }]}>
         {specialOffer && (
           <View style={styles.discount}>
             <Discount width="40" height="40" />
@@ -61,7 +66,7 @@ export function CardProduct({
         )}
         <Image source={image} style={styles.imageProduct} />
         <View style={styles.cardContent}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
+          <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={1}>
             {title}
           </Text>
           <View style={styles.cardBody}>
@@ -78,10 +83,10 @@ export function CardProduct({
           <View style={styles.cardFooter}>
             <View style={styles.cardRating}>
               <Star />
-              <Text style={styles.cardRatingTotal}>{rating}</Text>
+              <Text style={[styles.cardRatingTotal, { color: colors.text }]}>{rating}</Text>
             </View>
-            <Text style={styles.cardReviewTotal}>{reviewer} Reviews</Text>
-            <DotsThreeVertical />
+            <Text style={[styles.cardReviewTotal, { color: colors.text }]}>{reviewer} Reviews</Text>
+            <DotsThreeVertical fill={colors.text} />
           </View>
         </View>
       </View>
@@ -92,6 +97,7 @@ export function CardProduct({
 const styles = StyleSheet.create({
   card: {
     width: 180,
+    height: 225,
   },
   discount: {
     position: "absolute",
@@ -102,9 +108,17 @@ const styles = StyleSheet.create({
   cardProduct: {
     position: "relative",
     backgroundColor: Colors.default.white,
-    borderRadius: 10,
-    width: 180,
+    width: 175,
     padding: 10,
+
+    shadowOffset: {
+      width: 0.5,
+      height: 1,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 1,
+    elevation: 10,
+    borderRadius: 10,
   },
   imageProduct: {
     resizeMode: "center",
@@ -145,7 +159,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     paddingHorizontal: 8,
     paddingVertical: 1,
-    fontSize: 10,
+    fontSize: 8,
     borderRadius: 10,
   },
   cardContent: {

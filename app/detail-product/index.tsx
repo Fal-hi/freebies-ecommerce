@@ -1,7 +1,5 @@
 import {
   CaretLeft,
-  Cart,
-  CartPlus,
   Discount,
   Star,
   Whishlist,
@@ -10,26 +8,31 @@ import {
 import { ImageSlider } from "@/components/detail-product/ImageSlider";
 import { Products } from "@/components/home/Products";
 import { Colors } from "@/constants/Colors";
-import { cardProductData, dataCart, dataReviewers } from "@/libs/data";
+import { cardProductData, dataReviewers } from "@/libs/data";
 import { Divider } from "@/ui/Divider";
 import { Header } from "@/ui/Header";
 import { UserComment } from "@/ui/UserComment";
 import { Link, useLocalSearchParams, router } from "expo-router";
-import { useState } from "react";
 import {
   Animated,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useCart } from "@/context/CartContext";
+import { CartProduct } from "@/components/Cart";
+import { useTheme } from "@/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
+import { useFavorite } from "@/context/FavoriteContext";
 
 export default function DetailProduct() {
-  const [isFilled, setIsFilled] = useState(false);
-  const [cartItems, setCartItems] = useState<any[]>([]);
+  const { colors, defaultColors } = useTheme();
+  const { toggleFavorite, isFavorite } = useFavorite();
+  const { addToCart, cartItems } = useCart();
   const scaleValue = new Animated.Value(1);
   const params = useLocalSearchParams();
   const {
@@ -37,6 +40,7 @@ export default function DetailProduct() {
     image,
     images,
     title,
+    category,
     price,
     sold,
     rating,
@@ -45,6 +49,9 @@ export default function DetailProduct() {
     totalProduct,
     desc,
   }: any = params;
+
+  const isFilled = isFavorite(+id);
+
   const selectedReviewer = dataReviewers.find((item) => item.id === +id);
 
   function handlePressIn() {
@@ -61,27 +68,72 @@ export default function DetailProduct() {
       tension: 40,
       useNativeDriver: true,
     }).start();
-    setIsFilled(!isFilled);
+
+    toggleFavorite({
+      id: +id,
+      image,
+      images, // images is string stringified, but context expects props.
+      // Actually CardProductProps expects 'images' as array of objects.. or whatever data structure.
+      // Wait, params.images is JSON string.
+      // But toggleFavorite takes CardProductProps.
+      // Let's check CardProductProps type in FavoriteContext.
+      // It uses CardProductProps from ui/CardProduct.
+      // I should parse images if needed or pass as is?
+      // In FavoriteContext, we store CardProductProps.
+      // In DetailProduct, 'images' is a string (URL param).
+      // I need to parse it back to array if CardProduct expects array.
+      // Looking at lines 100: JSON.parse(images).
+      // So I should pass parsedImages.
+      title,
+      category,
+      price,
+      sold,
+      rating,
+      reviewer,
+      specialOffer,
+      totalProduct,
+      desc,
+    } as any);
   }
-  const parsedImages = JSON.parse(images);
+  const parsedImages = JSON.parse(images || "[]");
+
+  const isInCart = cartItems.some((item) => item.id === +id);
+
+  const handleAddToCart = () => {
+    if (isInCart) return;
+
+    addToCart({
+      id: +id,
+      image,
+      title,
+      category,
+      price: specialOffer || price,
+    });
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <Header>
-        <CaretLeft width="16" height="16" onPress={() => router.back()} />
-        <Text style={styles.headerTitle}>Detail Product</Text>
-        <Pressable
-          style={styles.notification}
-          onPress={() => router.push("/cart")}
-        >
-          <View style={styles.dot}>
-            <Text style={styles.dotText}>{dataCart.length}</Text>
-          </View>
-          <Cart width="24" height="24" />
-        </Pressable>
+        <CaretLeft
+          width="16"
+          height="16"
+          onPress={() => router.back()}
+          fill={colors.text}
+        />
+        <Text style={[styles.headerTitle, { color: colors.text }]}>
+          Detail Product
+        </Text>
+        <CartProduct />
       </Header>
       <ScrollView style={styles.content}>
-        <View style={styles.containerDetailProduct}>
+        <View
+          style={[
+            styles.containerDetailProduct,
+            { backgroundColor: colors.background },
+          ]}
+        >
           {/* Card */}
           <View style={styles.boxImageProduct}>
             {specialOffer && (
@@ -100,7 +152,9 @@ export default function DetailProduct() {
           </View>
           {/* Card Content */}
           <View>
-            <Text style={styles.cardTitle}>{title}</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>
+              {title}
+            </Text>
             <View style={styles.cardBody}>
               {specialOffer ? (
                 <View style={styles.cardSpecialOffer}>
@@ -115,8 +169,12 @@ export default function DetailProduct() {
             <View style={styles.cardFooter}>
               <View style={styles.cardRating}>
                 <Star width="16" height="16" />
-                <Text style={styles.cardRatingTotal}>{rating}</Text>
-                <Text style={styles.cardReviewTotal}>{reviewer} Reviews</Text>
+                <Text style={[styles.cardRatingTotal, { color: colors.text }]}>
+                  {rating}
+                </Text>
+                <Text style={[styles.cardReviewTotal, { color: colors.text }]}>
+                  {reviewer} Reviews
+                </Text>
               </View>
               <Text style={styles.totalProductAvailable}>
                 Available: {totalProduct}
@@ -126,20 +184,30 @@ export default function DetailProduct() {
           <Divider style={styles.divider} width={"100%"} />
           {/* Product Description */}
           <View style={styles.containerProductDescription}>
-            <Text style={styles.titleProductDescription}>
+            <Text
+              style={[styles.titleProductDescription, { color: colors.text }]}
+            >
               Product Description
             </Text>
-            <Text style={styles.contentProductDescription}>{desc}</Text>
+            <Text
+              style={[styles.contentProductDescription, { color: colors.text }]}
+            >
+              {desc}
+            </Text>
           </View>
           {/* Reviews */}
           <View style={styles.containerReviews}>
             {/* Header Reviews */}
             <View style={styles.headerReviews}>
               <View>
-                <Text style={styles.titleReviews}>Reviews ({reviewer})</Text>
+                <Text style={[styles.titleReviews, { color: colors.text }]}>
+                  Reviews ({reviewer})
+                </Text>
                 <View style={styles.cardRating}>
                   <Star width="20" height="20" />
-                  <Text style={styles.ratingReview}>{rating}</Text>
+                  <Text style={[styles.ratingReview, { color: colors.text }]}>
+                    {rating}
+                  </Text>
                 </View>
               </View>
               {selectedReviewer ? (
@@ -181,7 +249,15 @@ export default function DetailProduct() {
           </View>
         </View>
         {/* Best Seller */}
-        <View style={styles.containerBestSellers}>
+        <View
+          style={[
+            styles.containerBestSellers,
+            {
+              backgroundColor:
+                colors.background === "#151718" ? "#000" : Colors.default.gray2,
+            },
+          ]}
+        >
           <Products
             titleProduct="Best Sellers"
             dataProduct={cardProductData}
@@ -189,10 +265,25 @@ export default function DetailProduct() {
           />
         </View>
       </ScrollView>
-      <View style={styles.footer}>
-        <CartPlus width="28" height="28" />
-        <Pressable style={styles.buttonBuy}>
-          <Text style={styles.buttonBuyText}>Buy Product</Text>
+      <View style={[styles.footer, { backgroundColor: colors.background }]}>
+        {isInCart ? (
+          <Ionicons name="cart" size={30} color={defaultColors.red} />
+        ) : (
+          <Ionicons name="cart-outline" size={30} color={colors.text} />
+        )}
+        <Pressable
+          style={[styles.buttonBuy, isInCart && styles.buttonBuyDisabled]}
+          onPress={handleAddToCart}
+          disabled={isInCart}
+        >
+          <Text
+            style={[
+              styles.buttonBuyText,
+              isInCart && styles.buttonBuyTextDisabled,
+            ]}
+          >
+            {isInCart ? "Already in Cart" : "Add to Cart"}
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -389,5 +480,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: Colors.default.white,
     fontSize: 16,
+  },
+  buttonBuyDisabled: {
+    backgroundColor: Colors.default.gray,
+  },
+  buttonBuyTextDisabled: {
+    color: Colors.default.placeholder,
   },
 });

@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import StarRating from "react-native-star-rating-widget";
+import { useTheme } from "@/context/ThemeContext";
 
 type UserCommentProps = {
   image: ImageSourcePropType;
@@ -25,13 +26,14 @@ export function UserComment({
   date,
   comment,
 }: UserCommentProps) {
+  const { colors } = useTheme();
   return (
     <View style={styles.bodyReviews}>
       <Image source={image} style={styles.imageReview} />
       <View style={styles.contentUser}>
         <View style={styles.headerUser}>
           <View>
-            <Text style={styles.nameReview}>{name}</Text>
+            <Text style={[styles.nameReview, { color: colors.text }]}>{name}</Text>
             <StarRating
               rating={rating}
               onChange={() => {}}
@@ -44,7 +46,7 @@ export function UserComment({
           </View>
           <Text style={styles.dateReview}>{formatDate(date)}</Text>
         </View>
-        <Text numberOfLines={3} style={styles.commentUser}>
+        <Text numberOfLines={3} style={[styles.commentUser, { color: colors.text }]}>
           {comment}
         </Text>
       </View>
